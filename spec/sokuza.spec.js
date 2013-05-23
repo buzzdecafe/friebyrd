@@ -9,10 +9,9 @@ describe("mhkanren", function() {
         describe("disj", function() {
             it("returns all the results of f1 and all the results of f2", function() {
                 var rv = disj(f1, f2)("test1");
-                expect(pair(rv)).toBe(true);
+                expect(isPair(rv)).toBe(true);
                 expect(car(rv)).toBe("test1 f1");
                 expect(car(cdr(rv))).toBe("test1 f2");
-                expect(rv.toString()).toEqual("(test1 f1 test1 f2)");
             });
             
             it("returns no results only if neither f1 nor f2 returned any results", function() {
@@ -20,10 +19,10 @@ describe("mhkanren", function() {
                 expect(isEmpty(rv)).toBe(true);
                 rv = disj(fail, succeed)("test2");
                 expect(car(rv)).toEqual("test2");
-                expect(cdr(rv)).toBe(null);
+                expect(isEmpty(cdr(rv))).toBe(true);
                 rv = disj(succeed, fail)("test2");
                 expect(car(rv)).toEqual("test2");
-                expect(cdr(rv)).toBe(null);
+                expect(isEmpty(cdr(rv))).toBe(true);
             });
         });
         
@@ -31,7 +30,7 @@ describe("mhkanren", function() {
             it("returns the result of f2 applied to output of f1(x)", function() {
                 var rv = conj(f1, f2)("test3");
                 expect(car(rv)).toEqual("test3 f1 f2");
-                expect(cdr(rv)).toBe(null);
+                expect(isEmpty(cdr(rv))).toBe(true);
             });
             
             it("returns no results if any of its arguments fails", function() {
@@ -54,37 +53,42 @@ describe("mhkanren", function() {
         describe("succeed", function() {
             it("returns a list containing its (first) argument", function() {
                 expect(car(succeed(5))).toEqual(5);
-                expect(succeed(5).toString()).toEqual("(5)");
+                expect(isEmpty(cdr(succeed(5)))).toBe(true);
             });
         });
         
         describe("unify", function() {
-            it("returns the substitution object on success", function() {
+            it("returns the substitution list on success", function() {
                 var q = lvar("q");
-                var b = unify(true, q, ignorance);
-                expect(b.binds).toEqual({q: true});
+                var value = true;
+                var b = unify(value, q, emptyS);
+                expect(isPair(car(b))).toBe(true);
+                expect(car(car(b))).toEqual(q);
+                expect(cdr(car(b))).toEqual(value);
             });
             
             it("can bind lvar to another lvar", function() {
                 var q = lvar("q");
                 var p = lvar("p");
-                var b = unify(p, q, ignorance);
-                expect(b.binds.p).toEqual(q);
+                var b = unify(p, q, emptyS);
+                expect(car(car(b))).toEqual(p);
+                expect(cdr(car(b))).toEqual(q);
             });
             
             it("can bind an lvar to a value", function() {
                 var q = lvar("q");
                 var p = lvar("p");
-                var b = unify(p, q, ignorance);
+                var b = unify(p, q, emptyS);
                 var b = unify(q, 1, b);
-                expect(b.binds.q).toEqual(1);
+                expect(lookup(q, b)).toEqual(1);
+                expect(lookup(p, b)).toEqual(1);
             });
             
             it("can be composed with itself", function() {
                 var q = lvar("q");
                 var p = lvar("p");
-                var b = unify(p, 1, unify(p, q, ignorance));
-                expect(b.lookup(q)).toBe(1); 
+                var b = unify(p, 1, unify(p, q, emptyS));
+                expect(lookup(q, b)).toBe(1); 
             });
         });
         
@@ -100,9 +104,10 @@ describe("mhkanren", function() {
                 it("returns a list of bindings (substitutions)", function() {
                     var q = lvar("q");
                     var g = goal(q, true);
-                    var r = g(ignorance);
-                    expect(pair(r)).toBe(true);
-                    expect(car(r).binds).toEqual({q: true});
+                    var r = g(emptyS);
+                    expect(isPair(r)).toBe(true);
+                    expect(car(car(car(r)))).toEqual(q);
+                    expect(cdr(car(car(r)))).toBe(true);
                 });
             });
             
@@ -111,7 +116,8 @@ describe("mhkanren", function() {
         describe("choice", function() {
             it("succeeds (non-empty substitutions) if the element is a member of the list", function() {
                 var c = run(choice(2, list(1,2,3)));
-                expect(car(c).binds).toEqual({});
+                expect(isPair(c)).toBe(true); // we have a list of substitutions
+                expect(car(c)).toEqual(null); // but there's nothing in it. that's ok.
             });
         
             it("fails (empty substitutions) if the element is not a member of the list", function() {
@@ -123,27 +129,38 @@ describe("mhkanren", function() {
                 var q = lvar("q");
                 var c = run(choice(q, list(1,2,3)));
                 expect(length(c)).toEqual(3);
-                expect(car(c).binds).toEqual({q: 1});
-                expect(car(cdr(c)).binds).toEqual({q: 2});
-                expect(car(cdr(cdr(c))).binds).toEqual({q: 3});
+                expect(car(car(car(c)))).toEqual(q);
+                expect(cdr(car(car(c)))).toEqual(1);
+                expect(car(car(car(cdr(c))))).toEqual(q);
+                expect(cdr(car(car(cdr(c))))).toEqual(2);
+                expect(car(car(car(cdr(cdr(c)))))).toEqual(q);
+                expect(cdr(car(car(cdr(cdr(c)))))).toEqual(3);                
             });
         });
         
         describe("commono", function() {
             it("returns an lvar bound to the common element of two lists", function() {
-                var c = run(commono(list(1,2,3), list(3,4,5), "x"));
-                expect(car(c).binds).toEqual({x: 3});
+                var c = run(commono(list(5), list(5)));
+                expect(car(car(c))).toEqual(lvar("$x"));
+                expect(cdr(car(c))).toEqual(5);
+            });
+            it("returns an lvar bound to the common element of two lists (longer lists)", function() {
+                var c = run(commono(list(1,2,3), list(3,4,5)));
+                expect(car(car(c))).toEqual(lvar("$x"));
+                expect(cdr(car(c))).toEqual(3);
             });
             
             it("returns bindings of an lvar to multiple common elements of two lists", function() {
-                var c = run(commono(list(1,2,3), list(3,4,1,7), "x"));
+                var c = run(commono(list(1,2,3), list(3,4,1,7)));
                 //expect(length(c)).toBe(2);
-                expect(car(c).binds).toEqual({x: 1});
-                expect(car(cdr(c)).binds).toEqual({x: 3});
+                expect(car(car(c))).toEqual(lvar("$x"));
+                expect(cdr(car(c))).toEqual(1);
+                expect(car(car(cdr(cdr(c))))).toEqual(lvar("$x"));
+                expect(cdr(car(cdr(cdr(c))))).toEqual(3);
             });
             
             it("returns an empty list if there are no common elements", function() {
-                var c = run(commono(list(11,2,3), list(13, 4, 1, 7), "x"));
+                var c = run(commono(list(11,2,3), list(13, 4, 1, 7)));
                 expect(isEmpty(c)).toBe(true);
             });
         });
