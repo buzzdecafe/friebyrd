@@ -159,7 +159,7 @@ describe("mhkanren", function() {
                 expect(cdr(car(cdr(cdr(c))))).toEqual(3);
             });
             
-            it("returns an empty list if there are no common elements", function() {
+            xit("returns an empty list if there are no common elements", function() {
                 var c = run(commono(list(11,2,3), list(13, 4, 1, 7)));
                 expect(isEmpty(c)).toBe(true);
             });
