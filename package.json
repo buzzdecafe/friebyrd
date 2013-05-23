@@ -1,26 +1,25 @@
 {
-  "author": "Fogus <me@fogus.me> (http://www.fogus.me)",
-  "name": "friebyrd",
-  "description": "A miniKanren.",
-  "version": "0.1.1",
-  "homepage": "https://www.github.com/fogus/friebyrd",
+  "author": "buzzdecafe",
+  "name": "sokuza.js",
+  "description": "A miniKanren based on the scheme sokuza-kanren.",
+  "version": "0.0.1",
+  "homepage": "https://www.github.com/buzzdecafe/sokuza.js",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git://github.com/fogus/friebyrd.git"
+    "url": "git://github.com/buzzdecafe/sokuza.js.git"
   },
-  "main": "lib/friebyrd.js",
+  "main": "lib/sokuza.js",
   "scripts": {
-    "test": "jasmine-node --coffee --verbose spec"
+    "test": "jasmine-node --verbose spec"
   },
   "engines": {
     "node": "*"
   },
   "contributors": [
-    "Fogus <me@fogus.me> (<http://www.fogus.me>)"
+    "buzzdecaf"
   ],
   "dependencies": {
-    "underscore": ">= 1.4.3"
   },
   "devDependencies": {}
 }
