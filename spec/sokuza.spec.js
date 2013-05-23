@@ -116,8 +116,9 @@ describe("mhkanren", function() {
         describe("choice", function() {
             it("succeeds (non-empty substitutions) if the element is a member of the list", function() {
                 var c = run(choice(2, list(1,2,3)));
-                expect(isPair(c)).toBe(true); // we have a list of substitutions
-                expect(car(c)).toEqual(null); // but there's nothing in it. that's ok.
+                expect(isPair(c)).toBe(true); 
+                expect(isEmpty(c)).toBe(false); // we have a list of substitutions
+                expect(isEmpty(car(car(c)))).toBe(true); // but there's nothing in it. that's ok.
             });
         
             it("fails (empty substitutions) if the element is not a member of the list", function() {
@@ -139,8 +140,13 @@ describe("mhkanren", function() {
         });
         
         describe("commono", function() {
-            it("returns an lvar bound to the common element of two lists", function() {
+            it("returns an lvar bound to the common element of two lists (1)", function() {
                 var c = run(commono(list(5), list(5)));
+                expect(car(car(c))).toEqual(lvar("$x"));
+                expect(cdr(car(c))).toEqual(5);
+            });
+            it("returns an lvar bound to the common element of two lists (2)", function() {
+                var c = run(commono(list(5), list(5, 15)));
                 expect(car(car(c))).toEqual(lvar("$x"));
                 expect(cdr(car(c))).toEqual(5);
             });
