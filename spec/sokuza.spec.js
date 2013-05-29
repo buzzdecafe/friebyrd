@@ -118,6 +118,7 @@ describe("mhkanren", function() {
                 var c = run(choice(2, list(2)));
                 expect(isEmpty(c)).toBe(false);
                 c = run(choice(2, list(1,2,3)));
+                expect(length(c)).toBe(1);
                 expect(isPair(c)).toBe(true); 
                 expect(isEmpty(c)).toBe(false); // we have a list of substitutions
                 expect(isEmpty(car(c))).toBe(true); // but there's nothing in it. that's ok.
