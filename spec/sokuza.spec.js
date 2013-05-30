@@ -1,7 +1,7 @@
 
 F.installTo(this);
 
-describe("mhkanren", function() {
+describe("sokuza.js", function() {
    
     describe("non-deterministic functions", function() {
         function f1(x) { return succeed(x + " f1"); }
@@ -9,7 +9,7 @@ describe("mhkanren", function() {
         describe("disj", function() {
             it("returns all the results of f1 and all the results of f2", function() {
                 var rv = disj(f1, f2)("test1");
-                expect(isPair(rv)).toBe(true);
+                expect(isEmpty(rv)).toBe(false);
                 expect(car(rv)).toBe("test1 f1");
                 expect(car(cdr(rv))).toBe("test1 f2");
             });
@@ -61,34 +61,32 @@ describe("mhkanren", function() {
             it("returns the substitution list on success", function() {
                 var q = lvar("q");
                 var value = true;
-                var b = unify(value, q, emptyS);
-                expect(isPair(car(b))).toBe(true);
-                expect(car(car(b))).toEqual(q);
-                expect(cdr(car(b))).toEqual(value);
+                var b = emptyS().unify(value, q);
+                expect(b instanceof F.Bindings).toBe(true);
+                expect(b.binds).toEqual({q: value});
             });
             
             it("can bind lvar to another lvar", function() {
                 var q = lvar("q");
                 var p = lvar("p");
-                var b = unify(p, q, emptyS);
-                expect(car(car(b))).toEqual(p);
-                expect(cdr(car(b))).toEqual(q);
+                var b = emptyS().unify(p, q);
+                expect(b.binds).toEqual({p: q});
             });
             
             it("can bind an lvar to a value", function() {
                 var q = lvar("q");
                 var p = lvar("p");
-                var b = unify(p, q, emptyS);
-                var b = unify(q, 1, b);
-                expect(lookup(q, b)).toEqual(1);
-                expect(lookup(p, b)).toEqual(1);
+                var b = emptyS().unify(p, q);
+                b = b.unify(q, 1);
+                expect(b.lookup(q)).toEqual(1);
+                expect(b.lookup(p)).toEqual(1);
             });
             
             it("can be composed with itself", function() {
                 var q = lvar("q");
                 var p = lvar("p");
-                var b = unify(p, 1, unify(p, q, emptyS));
-                expect(lookup(q, b)).toBe(1); 
+                var b = emptyS().unify(p, 1).unify(p, q);
+                expect(b.lookup(q, b)).toBe(1); 
             });
         });
         
@@ -104,10 +102,9 @@ describe("mhkanren", function() {
                 it("returns a list of bindings (substitutions)", function() {
                     var q = lvar("q");
                     var g = goal(q, true);
-                    var r = g(emptyS);
-                    expect(isPair(r)).toBe(true);
-                    expect(car(car(car(r)))).toEqual(q);
-                    expect(cdr(car(car(r)))).toBe(true);
+                    var r = g(emptyS());
+                    expect(isEmpty(r)).toBe(false);
+                    expect(car(r).binds).toEqual({q: true});
                 });
             });
             
@@ -115,44 +112,41 @@ describe("mhkanren", function() {
         
         describe("choice", function() {
             it("succeeds (non-empty substitutions) if the element is a member of the list", function() {
-                var c = run(choice(2, list(2)));
+                var c = run(choice(2, [2]));
                 expect(isEmpty(c)).toBe(false);
-                c = run(choice(2, list(1,2,3)));
-                expect(isPair(c)).toBe(true); 
+                expect(car(c).binds).toEqual({});
+                c = run(choice(2, [1,2,3]));
                 expect(isEmpty(c)).toBe(false); // we have a list of substitutions
-                expect(isEmpty(car(c))).toBe(true); // but there's nothing in it. that's ok.
+                expect(car(c).binds).toEqual({}); // but there's nothing in it. that's ok.
             });
         
             it("fails (empty substitutions) if the element is not a member of the list", function() {
-                var c = run(choice(1, list(2)));
+                var c = run(choice(1, [2]));
                 expect(isEmpty(c)).toBe(true);
-                c = run(choice(10, list(1,2,3)));
+                c = run(choice(10, [1,2,3]));
                 expect(isEmpty(c)).toBe(true);
             });
             
             it("returns a list of bindings that an lvar can take in the list", function() {
                 var q = lvar("q");
-                var c = run(choice(q, list(1,2,3)));
-                expect(length(c)).toEqual(3);
-                expect(car(car(car(c)))).toEqual(q);
-                expect(cdr(car(car(c)))).toEqual(1);
-                expect(car(car(car(cdr(c))))).toEqual(q);
-                expect(cdr(car(car(cdr(c))))).toEqual(2);
-                expect(car(car(car(cdr(cdr(c)))))).toEqual(q);
-                expect(cdr(car(car(cdr(cdr(c)))))).toEqual(3);                
+                var c = run(choice(q, [1,2,3]));
+                expect(c.length).toEqual(3);
+                expect(c[0].binds.q).toEqual(1);
+                expect(c[1].binds.q).toEqual(2);
+                expect(c[2].binds.q).toEqual(3);
             });
         });
         
         describe("commono", function() {
             it("returns an lvar bound to the common element of two lists (1)", function() {
-                var c = run(commono(list(5), list(5)));
-                expect(car(car(c))).toEqual(lvar("$x"));
-                expect(cdr(car(c))).toEqual(5);
+                var c = run(commono([5], [5]));
+                expect(c.length).toEqual(1);
+                expect(c[0].binds["$x"]).toEqual(5);
             });
             it("returns an lvar bound to the common element of two lists (2)", function() {
-                var c = run(commono(list(5), list(5, 15)));
-                expect(car(car(c))).toEqual(lvar("$x"));
-                expect(cdr(car(c))).toEqual(5);
+                var c = run(commono([5], [5, 15]));
+                expect(c.length).toEqual(1);
+                expect(c[0].binds["$x"]).toEqual(5);
             });
             it("returns an lvar bound to the common element of two lists (longer lists)", function() {
                 var c = run(commono(list(1,2,3), list(3,4,5)));
