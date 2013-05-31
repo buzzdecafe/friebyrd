@@ -20,6 +20,9 @@
     "buzzdecafe"
   ],
   "dependencies": {
+      "requirejs": "2.0.x",
+      "grunt": "~0.4.1",
+      "grunt-contrib-jshint": "~0.1.1"
   },
   "devDependencies": {}
 }
