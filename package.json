@@ -1,5 +1,5 @@
 {
-  "author": "buzzdecafe",
+  "author": "buzzdecafe <m_hur@yahoo.com> (https://github.com/buzzdecafe)",
   "name": "sokuza.js",
   "description": "A miniKanren based on the scheme sokuza-kanren.",
   "version": "0.0.1",
@@ -20,6 +20,10 @@
     "buzzdecafe"
   ],
   "dependencies": {
+      "eweda": "https://github.com/CrossEye/eweda/tarball/master",
+      "requirejs": "2.0.x",
+      "grunt": "~0.4.1",
+      "grunt-contrib-jshint": "~0.1.1"
   },
   "devDependencies": {}
 }
