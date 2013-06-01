@@ -184,7 +184,7 @@ require(["sokuza"], function(sokuza) {
                     var q = lvar("q");
                     var p = lvar("p");
                     var c = run(conso(q, p, [1,2,3]));
-                    debugger;
+                    expect(isEmpty(c)).toBe(false);
                 });
             });
 
