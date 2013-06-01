@@ -188,7 +188,7 @@ require(["sokuza"], function(sokuza) {
                 });
             });
 
-            describe("apppendo", function() {
+            xdescribe("apppendo", function() {
                 it("succeeds if l3 is the same as the concatenation of l1 and l2", function() {
                     var c = run(apppendo([1], [2], lvar("q")));
                     expect(car(c).binds.q).toEqual([1,2]);
@@ -211,31 +211,32 @@ require(["sokuza"], function(sokuza) {
             });
 
         });
-        /*
+
+
          describe("Logic Engine", function() {
-         describe("run", function() {
-         it("returns an empty list if its goal fails", function() {
-         var q = lvar("q");
-         var p = lvar("p");
-         expect(run(fail)).toEqual([]);
-         expect(run(goal(1, false))).toEqual([]);
-         expect(run(goal(1, null))).toEqual([]);
-         expect(run(goal(false, 1))).toEqual([]);
-         expect(run(goal(null, 1))).toEqual([]);
-         expect(run(goal(2, 1))).toEqual([]);
-         });
+             describe("run", function() {
+                 it("returns an empty list if its goal fails", function() {
+                     var q = lvar("q");
+                     var p = lvar("p");
+                     expect(run(fail)).toEqual([]);
+                     expect(run(goal(1, false))).toEqual([]);
+                     expect(run(goal(1, null))).toEqual([]);
+                     expect(run(goal(false, 1))).toEqual([]);
+                     expect(run(goal(null, 1))).toEqual([]);
+                     expect(run(goal(2, 1))).toEqual([]);
+                 });
 
-         it("returns a non-empty list if its goal succeeds", function() {
-         var q = lvar("q");
-         var b = run(succeed);
-         expect(b instanceof Array).toBe(true);
-         expect(b[0].binds).toEqual({});
-         b = run(goal(q, true));
-         expect(b instanceof Array).toBe(true);
-         expect(b[0].binds).toEqual({q: true});
-         });
+                 it("returns a non-empty list if its goal succeeds", function() {
+                    var q = lvar("q");
+                    var b = run(succeed);
+                    expect(b instanceof Array).toBe(true);
+                    expect(b[0].binds).toEqual({});
+                    b = run(goal(q, true));
+                    expect(b instanceof Array).toBe(true);
+                    expect(b[0].binds).toEqual({q: true});
+                });
+            });
 
-         });
          });
          /**/
     });
