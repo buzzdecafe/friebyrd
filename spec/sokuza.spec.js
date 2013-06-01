@@ -149,66 +149,62 @@ require(["sokuza"], function(sokuza) {
                     expect(c[0].binds["$x"]).toEqual(5);
                 });
                 it("returns an lvar bound to the common element of two lists (longer lists)", function() {
-                    var c = run(commono(list(1,2,3), list(3,4,5)));
+                    var c = run(commono([1,2,3], [3,4,5]));
                     expect(c.length).toBe(1);
                     expect(c[0].binds["$x"]).toEqual(3);
                 });
 
                 it("returns bindings of an lvar to multiple common elements of two lists", function() {
-                    var c = run(commono(list(1,2,3), list(3,4,1,7)));
-                    //expect(length(c)).toBe(2);
-                    expect(car(car(c))).toEqual(lvar("$x"));
-                    expect(cdr(car(c))).toEqual(1);
-                    expect(car(car(cdr(cdr(c))))).toEqual(lvar("$x"));
-                    expect(cdr(car(cdr(cdr(c))))).toEqual(3);
+                    var c = run(commono([1,2,3], [3,4,1,7]));
+                    expect(c.length).toBe(2);
+                    expect(c[0].binds["$x"]).toEqual(1);
+                    expect(c[1].binds["$x"]).toEqual(3);
                 });
 
-                xit("returns an empty list if there are no common elements", function() {
-                    var c = run(commono(list(11,2,3), list(13, 4, 1, 7)));
+                it("returns an empty list if there are no common elements", function() {
+                    var c = run(commono([11,2,3], [13, 4, 1, 7]));
                     expect(isEmpty(c)).toBe(true);
                 });
             });
 
             describe("conso", function() {
                 it("conso(a, b, l) succeeds if in the current state of the world, cons(a, b) is the same as l.", function() {
-                    var c = run(conso(1, list(2, 3), list(1,2,3)));
+                    var c = run(conso(1, [2, 3], [1,2,3]));
                     expect(isEmpty(c)).toBe(false);
+                    expect(car(c).isEmpty()).toBe(true);
                 });
 
                 it("may bind lvar to the list", function() {
                     var q = lvar("q");
-                    var c = run(conso(1, list(2, 3), q));
-                    expect(cdr(car(car(c))).equals(list(1,2,3))).toBe(true);
+                    var c = run(conso(1, [2, 3], q));
+                    expect(c[0].binds.q).toEqual([1,2,3]);
                 });
 
                 it("may bind lvar to a or b", function() {
                     var q = lvar("q");
                     var p = lvar("p");
-                    var c = run(conso(q, p, list(1,2,3)));
-                    expect(car(car(car(c)))).toEqual(p);
-                    expect(cdr(car(car(c))).equals(list(2,3))).toBe(true);
-                    expect(cdr(car(cdr(car(c))))).toEqual(1);
-                    expect(car(car(cdr(car(c))))).toEqual(q);
+                    var c = run(conso(q, p, [1,2,3]));
+                    debugger;
                 });
             });
 
-            xdescribe("apppendo", function() {
+            describe("apppendo", function() {
                 it("succeeds if l3 is the same as the concatenation of l1 and l2", function() {
-                    var c = run(apppendo(list(1), list(2), lvar("q")));
-                    expect(car(c).binds.q).toEqual(list(1,2));
+                    var c = run(apppendo([1], [2], lvar("q")));
+                    expect(car(c).binds.q).toEqual([1,2]);
 
-                    c = run(apppendo(list(1, 2, 3), lvar("q"), list(1,2,3,4,5)));
-                    expect(car(c).binds.q).toEqual(list(4,5));
+                    c = run(apppendo([1, 2, 3], lvar("q"), [1,2,3,4,5]));
+                    expect(car(c).binds.q).toEqual([4,5]);
 
-                    c = run(apppendo(lvar("q"), list(4,5), list(1,2,3,4,5)));
-                    expect(car(c).binds.q).toEqual(list(1,2,3));
+                    c = run(apppendo(lvar("q"), [4,5], [1,2,3,4,5]));
+                    expect(car(c).binds.q).toEqual([1,2,3]);
 
-                    c = run(apppendo(lvar("q"), lvar("p"), list(1,2,3,4,5)));
-                    expect(car(c).binds.q).toEqual(list(1));
+                    c = run(apppendo(lvar("q"), lvar("p"), [1,2,3,4,5]));
+                    expect(car(c).binds.q).toEqual([1]);
                 });
 
                 it("fails if it cannot unify l1 & l2 with l3", function() {
-                    var c = run(apppendo(list(1), list(2), list(1)));
+                    var c = run(apppendo([1], [2], [3]));
                     expect(isEmpty(c)).toBe(true);
                 });
 
