@@ -20,7 +20,7 @@
     "buzzdecafe"
   ],
   "dependencies": {
-      "eweda": "https://github.com/CrossEye/eweda/tarball/master",
+      "ramda": "https://github.com/CrossEye/ramda/tarball/master",
       "requirejs": "2.0.x",
       "grunt": "~0.4.1",
       "grunt-contrib-jshint": "~0.1.1"
