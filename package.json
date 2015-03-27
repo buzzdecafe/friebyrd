@@ -13,17 +13,9 @@
   "scripts": {
     "test": "jasmine-node --verbose spec"
   },
-  "engines": {
-    "node": "*"
-  },
-  "contributors": [
-    "buzzdecafe"
-  ],
   "dependencies": {
-      "ramda": "https://github.com/CrossEye/ramda/tarball/master",
-      "requirejs": "2.0.x",
-      "grunt": "~0.4.1",
-      "grunt-contrib-jshint": "~0.1.1"
+    "ramda": "^0.13.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+  }
 }
