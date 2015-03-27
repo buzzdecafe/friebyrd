@@ -1,5 +1,5 @@
 {
-  "author": "buzzdecafe <m_hur@yahoo.com> (http://buzzdecafe.com)",
+  "author": "Michael Hurley <mh@buzzdecafe.com> (http://buzzdecafe.com)",
   "name": "sokuza.js",
   "description": "A miniKanren based on the scheme sokuza-kanren.",
   "version": "0.0.1",
@@ -11,11 +11,16 @@
   },
   "main": "lib/sokuza.js",
   "scripts": {
-    "test": "jasmine-node --verbose spec"
+    "test": "mocha --reporter spec --bail --check-leaks test/"
   },
   "dependencies": {
     "ramda": "^0.13.0"
   },
   "devDependencies": {
+    "chai": "~2.2.0",
+    "jsverify": "^0.5.1",
+    "mocha": "^2.1.0",
+    "uglify-js": "2.4.x",
+    "xyz": "0.5.x"
   }
 }

@@ -1,4 +1,4 @@
-var LVar = require('LVar');
+var LVar = require('./LVar');
 
 Bindings = function(seed) {
     if (seed == null) {

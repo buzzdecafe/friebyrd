@@ -9,5 +9,3 @@ LVar.prototype.equals = function(that) {
 };
 
 module.exports = LVar;
-
-
