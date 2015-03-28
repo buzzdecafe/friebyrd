@@ -64,7 +64,7 @@ function unify(t1, t2, s) {
   if (LVar.isLvar(t2)) {
     return s.extend(t2, t1);
   }
-  if (R.isArray(t1) && R.isArray(t2)) {
+  if (isArray(t1) && isArray(t2)) {
     s = unify(R.head(t1), R.head(t2), s);
     return (s === null || s.isEmpty()) ? s : unify(R.tail(t1), R.tail(t2), s);
   }
@@ -96,7 +96,7 @@ function commono(l, r) {
 }
 
 function choice($a, $b, ls) {
-  return goal(cons($a, $b), ls);
+  return goal(R.prepend($a, $b), ls);
 }
 
 function bindings() {
