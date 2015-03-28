@@ -2,6 +2,9 @@ var R = require('ramda');
 var LVar = require('./LVar');
 var Bindings = require('./Bindings');
 
+var succeed = R.of;
+var fail = R.empty;
+
 function disjunction(l, r) {
   return function(x) {
     return R.concat(l(x), r(x));
@@ -14,19 +17,17 @@ function conjunction(l, r) {
   };
 }
 
-
-function disj() {
-  return arguments.length === 0 ? fail :
-    disjunction(R.head(arguments), disj(R.tail(arguments)));
+function disj(fns) {
+  return fns.length === 0 ? fail :
+    disjunction(R.head(fns), disj(R.tail(fns)));
 }
 
-function conj() {
-  var args = arguments;
-  switch (args.length) {
+function conj(fns) {
+  switch (fns.length) {
     case 0: return succeed;
-    case 1: return R.head(args);
-    default: return conjunction(R.head(args), function(s) {
-        return conj(R.tail(args))(s);
+    case 1: return R.head(fns);
+    default: return conjunction(R.head(fns), function(s) {
+        return conj(R.tail(fns))(s);
     });
   }
 }
@@ -98,17 +99,12 @@ function choice($a, $b, ls) {
   return goal(cons($a, $b), ls);
 }
 
-function installTo(obj) {
-  var fn;
-  for (fn in this) {
-    if (this.hasOwnProperty(fn)) {
-      obj[fn] = this.fn;
-    }
-  }
-  return this;
+function bindings() {
+  return new Bindings();
 }
 
 module.exports = {
+  bindings: bindings,
   choice: choice,
   commono: commono,
   conj: conj,
@@ -116,13 +112,12 @@ module.exports = {
   disj: disj,
   disjunction: disjunction,
   equals: equals,
-  fail: R.empty,
+  fail: fail,
   goal: goal,
-  installTo: installTo,
   isLvar: isLvar,
   lvar: lvar,
   run: run,
-  succeed: R.of,
+  succeed: succeed,
   unify: unify,
 };
 

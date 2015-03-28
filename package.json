@@ -11,7 +11,8 @@
   },
   "main": "lib/sokuza.js",
   "scripts": {
-    "test": "mocha --reporter spec --bail --check-leaks test/"
+    "test":   "mocha --reporter spec --bail --colors --check-leaks test/"
+    "test-w": "mocha --reporter spec --bail --colors --check-leaks --watch src/ test/"
   },
   "dependencies": {
     "ramda": "^0.13.0"

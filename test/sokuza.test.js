@@ -1,44 +1,44 @@
 var R = require('ramda');
 var expect = require('chai').expect;
-require("../src/sokuza").installTo(this);
+var S = require("../src/sokuza");
 
 describe("sokuza.js", function() {
 
     describe("non-deterministic functions", function() {
-        function f1(x) { return succeed(x + " f1"); }
-        function f2(x) { return succeed(x + " f2"); }
+        function f1(x) { return S.succeed(x + " f1"); }
+        function f2(x) { return S.succeed(x + " f2"); }
         describe("disj", function() {
             it("returns all the results of f1 and all the results of f2", function() {
-                var rv = disj(f1, f2)("test1");
-                expect(isEmpty(rv)).toBe(false);
-                expect(R.head(rv)).toBe("test1 f1");
-                expect(R.head(R.tail(rv))).toBe("test1 f2");
+                var rv = S.disj([f1, f2])("test1");
+                expect(R.isEmpty(rv)).to.equal(false);
+                expect(R.head(rv)).to.equal("test1 f1");
+                expect(R.head(R.tail(rv))).to.equal("test1 f2");
             });
 
             it("returns no results only if neither f1 nor f2 returned any results", function() {
-                var rv = disj(fail, fail)("test2");
-                expect(isEmpty(rv)).toBe(true);
-                rv = disj(fail, succeed)("test2");
-                expect(R.head(rv)).toEqual("test2");
-                expect(isEmpty(R.tail(rv))).toBe(true);
-                rv = disj(succeed, fail)("test2");
-                expect(R.head(rv)).toEqual("test2");
-                expect(isEmpty(R.tail(rv))).toBe(true);
+                var rv = S.disj([S.fail, S.fail])("test2");
+                expect(R.isEmpty(rv)).to.equal(true);
+                rv = S.disj([S.fail, S.succeed])("test2");
+                expect(R.head(rv)).to.equal("test2");
+                expect(R.isEmpty(R.tail(rv))).to.equal(true);
+                rv = S.disj([S.succeed, S.fail])("test2");
+                expect(R.head(rv)).to.equal("test2");
+                expect(R.isEmpty(R.tail(rv))).to.equal(true);
             });
         });
 
         describe("conj", function() {
             it("returns the result of f2 applied to output of f1(x)", function() {
-                var rv = conj(f1, f2)("test3");
+                var rv = S.conj(f1, f2)("test3");
                 expect(R.head(rv)).toEqual("test3 f1 f2");
-                expect(isEmpty(R.tail(rv))).toBe(true);
+                expect(R.isEmpty(R.tail(rv))).to.equal(true);
             });
 
             it("returns no results if any of its arguments fails", function() {
-                var sf = conj(succeed, fail)("test4");
-                var fs = conj(fail, succeed)("test4");
-                expect(isEmpty(sf)).toBe(true);
-                expect(isEmpty(fs)).toBe(true);
+                var sf = S.conj(succeed, fail)("test4");
+                var fs = S.conj(fail, succeed)("test4");
+                expect(R.isEmpty(sf)).to.equal(true);
+                expect(R.isEmpty(fs)).to.equal(true);
             });
         });
     });
@@ -47,64 +47,63 @@ describe("sokuza.js", function() {
 
         describe("fail", function() {
             it("returns an empty list for any arguments", function() {
-                expect(isEmpty(fail(5))).toBe(true);
+                expect(R.isEmpty(S.fail(5))).to.equal(true);
             });
         });
 
         describe("succeed", function() {
             it("returns a list containing its (first) argument", function() {
-                expect(R.head(succeed(5))).toEqual(5);
-                expect(isEmpty(R.tail(succeed(5)))).toBe(true);
+                expect(R.head(S.succeed(5))).toEqual(5);
+                expect(R.isEmpty(R.tail(S.succeed(5)))).to.equal(true);
             });
         });
 
         describe("unify", function() {
             it("returns the substitution list on success", function() {
-                var q = lvar("q");
+                var q = S.lvar("q");
                 var value = true;
-                var b = unify(value, q, new Bindings());
-                expect(b instanceof Bindings).toBe(true);
+                var b = S.unify(value, q, S.bindings());
                 expect(b.binds).toEqual({q: value});
             });
 
             it("can bind lvar to another lvar", function() {
-                var q = lvar("q");
-                var p = lvar("p");
-                var b = unify(p, q, new Bindings());
+                var q = S.lvar("q");
+                var p = S.lvar("p");
+                var b = S.unify(p, q, S.bindings());
                 expect(b.binds).toEqual({p: q});
             });
 
             it("can bind an lvar to a value", function() {
-                var q = lvar("q");
-                var p = lvar("p");
-                var b = unify(p, q, new Bindings());
-                b = unify(q, 1, b);
+                var q = S.lvar("q");
+                var p = S.lvar("p");
+                var b = S.unify(p, q, S.bindings());
+                b = S.unify(q, 1, b);
                 expect(b.lookup(q)).toEqual(1);
                 expect(b.lookup(p)).toEqual(1);
             });
 
             it("can be composed with itself", function() {
-                var q = lvar("q");
-                var p = lvar("p");
-                var b = unify(p, 1, unify(p, q, new Bindings()));
-                expect(b.lookup(q, b)).toBe(1);
+                var q = S.lvar("q");
+                var p = S.lvar("p");
+                var b = S.unify(p, 1, S.unify(p, q, S.bindings()));
+                expect(b.lookup(q, b)).to.equal(1);
             });
         });
 
         describe("goal method", function() {
             it("takes two arguments", function() {
-                expect(goal.length).toBe(2);
+                expect(S.goal.length).to.equal(2);
             });
             it("returns a function", function() {
-                var g = goal(1,2);
-                expect(typeof g).toBe("function");
+                var g = S.goal(1,2);
+                expect(typeof g).to.equal("function");
             });
             describe("the function returned from goal", function() {
                 it("returns a list of bindings (substitutions)", function() {
-                    var q = lvar("q");
-                    var g = goal(q, true);
-                    var r = g(new Bindings());
-                    expect(isEmpty(r)).toBe(false);
+                    var q = S.lvar("q");
+                    var g = S.goal(q, true);
+                    var r = g(S.indings());
+                    expect(R.isEmpty(r)).to.equal(false);
                     expect(R.head(r).binds).toEqual({q: true});
                 });
             });
@@ -113,24 +112,24 @@ describe("sokuza.js", function() {
 
         describe("choice", function() {
             it("succeeds (non-empty substitutions) if the element is a member of the list", function() {
-                var c = run(choice(2, [2]));
-                expect(isEmpty(c)).toBe(false);
+                var c = S.run(choice(2, [2]));
+                expect(R.isEmpty(c)).to.equal(false);
                 expect(R.head(c).binds).toEqual({});
-                c = run(choice(2, [1,2,3]));
-                expect(isEmpty(c)).toBe(false); // we have a list of substitutions
+                c = S.run(S.choice(2, [1,2,3]));
+                expect(R.isEmpty(c)).to.equal(false); // we have a list of substitutions
                 expect(R.head(c).binds).toEqual({}); // but there's nothing in it. that's ok.
             });
 
             it("fails (empty substitutions) if the element is not a member of the list", function() {
-                var c = run(choice(1, [2]));
-                expect(isEmpty(c)).toBe(true);
-                c = run(choice(10, [1,2,3]));
-                expect(isEmpty(c)).toBe(true);
+                var c = S.run(choice(1, [2]));
+                expect(R.isEmpty(c)).to.equal(true);
+                c = S.run(S.choice(10, [1,2,3]));
+                expect(R.isEmpty(c)).to.equal(true);
             });
 
             it("returns a list of bindings that an lvar can take in the list", function() {
-                var q = lvar("q");
-                var c = run(choice(q, [1,2,3]));
+                var q = S.lvar("q");
+                var c = S.run(choice(q, [1,2,3]));
                 expect(c.length).toEqual(3);
                 expect(c[0].binds.q).toEqual(1);
                 expect(c[1].binds.q).toEqual(2);
@@ -140,73 +139,73 @@ describe("sokuza.js", function() {
 
         describe("commono", function() {
             it("returns an lvar bound to the common element of two lists (1)", function() {
-                var c = run(commono([5], [5]));
+                var c = S.run(commono([5], [5]));
                 expect(c.length).toEqual(1);
                 expect(c[0].binds["$x"]).toEqual(5);
             });
             it("returns an lvar bound to the common element of two lists (2)", function() {
-                var c = run(commono([5], [5, 15]));
+                var c = S.run(commono([5], [5, 15]));
                 expect(c.length).toEqual(1);
                 expect(c[0].binds["$x"]).toEqual(5);
             });
             it("returns an lvar bound to the common element of two lists (longer lists)", function() {
-                var c = run(commono([1,2,3], [3,4,5]));
-                expect(c.length).toBe(1);
+                var c = S.run(commono([1,2,3], [3,4,5]));
+                expect(c.length).to.equal(1);
                 expect(c[0].binds["$x"]).toEqual(3);
             });
 
             it("returns bindings of an lvar to multiple common elements of two lists", function() {
-                var c = run(commono([1,2,3], [3,4,1,7]));
-                expect(c.length).toBe(2);
+                var c = S.run(commono([1,2,3], [3,4,1,7]));
+                expect(c.length).to.equal(2);
                 expect(c[0].binds["$x"]).toEqual(1);
                 expect(c[1].binds["$x"]).toEqual(3);
             });
 
             it("returns an empty list if there are no common elements", function() {
-                var c = run(commono([11,2,3], [13, 4, 1, 7]));
-                expect(isEmpty(c)).toBe(true);
+                var c = S.run(commono([11,2,3], [13, 4, 1, 7]));
+                expect(R.isEmpty(c)).to.equal(true);
             });
         });
 
         describe("conso", function() {
             it("conso(a, b, l) succeeds if in the current state of the world, cons(a, b) is the same as l.", function() {
-                var c = run(conso(1, [2, 3], [1,2,3]));
-                expect(isEmpty(c)).toBe(false);
-                expect(R.head(c).isEmpty()).toBe(true);
+                var c = S.run(conso(1, [2, 3], [1,2,3]));
+                expect(R.isEmpty(c)).to.equal(false);
+                expect(R.head(c).isEmpty()).to.equal(true);
             });
 
             it("may bind lvar to the list", function() {
-                var q = lvar("q");
-                var c = run(conso(1, [2, 3], q));
+                var q = S.lvar("q");
+                var c = S.run(conso(1, [2, 3], q));
                 expect(c[0].binds.q).toEqual([1,2,3]);
             });
 
             it("may bind lvar to a or b", function() {
-                var q = lvar("q");
-                var p = lvar("p");
-                var c = run(conso(q, p, [1,2,3]));
-                expect(isEmpty(c)).toBe(false);
+                var q = S.lvar("q");
+                var p = S.lvar("p");
+                var c = S.run(conso(q, p, [1,2,3]));
+                expect(R.isEmpty(c)).to.equal(false);
             });
         });
 
         xdescribe("apppendo", function() {
             it("succeeds if l3 is the same as the concatenation of l1 and l2", function() {
-                var c = run(apppendo([1], [2], lvar("q")));
+                var c = S.run(apppendo([1], [2], S.lvar("q")));
                 expect(R.head(c).binds.q).toEqual([1,2]);
 
-                c = run(apppendo([1, 2, 3], lvar("q"), [1,2,3,4,5]));
+                c = S.run(S.apppendo([1, 2, 3], S.lvar("q"), [1,2,3,4,5]));
                 expect(R.head(c).binds.q).toEqual([4,5]);
 
-                c = run(apppendo(lvar("q"), [4,5], [1,2,3,4,5]));
+                c = S.run(S.apppendo(S.lvar("q"), [4,5], [1,2,3,4,5]));
                 expect(R.head(c).binds.q).toEqual([1,2,3]);
 
-                c = run(apppendo(lvar("q"), lvar("p"), [1,2,3,4,5]));
+                c = S.run(S.apppendo(S.lvar("q"), S.lvar("p"), [1,2,3,4,5]));
                 expect(R.head(c).binds.q).toEqual([1]);
             });
 
             it("fails if it cannot unify l1 & l2 with l3", function() {
-                var c = run(apppendo([1], [2], [3]));
-                expect(isEmpty(c)).toBe(true);
+                var c = S.run(S.apppendo([1], [2], [3]));
+                expect(R.isEmpty(c)).to.equal(true);
             });
 
         });
@@ -217,23 +216,23 @@ describe("sokuza.js", function() {
      describe("Logic Engine", function() {
          describe("run", function() {
              it("returns an empty list if its goal fails", function() {
-                 var q = lvar("q");
-                 var p = lvar("p");
-                 expect(run(fail)).toEqual([]);
-                 expect(run(goal(1, false))).toEqual([]);
-                 expect(run(goal(1, null))).toEqual([]);
-                 expect(run(goal(false, 1))).toEqual([]);
-                 expect(run(goal(null, 1))).toEqual([]);
-                 expect(run(goal(2, 1))).toEqual([]);
+                 var q = S.lvar("q");
+                 var p = S.lvar("p");
+                 expect(S.run(S.fail)).toEqual([]);
+                 expect(S.run(S.goal(1, false))).toEqual([]);
+                 expect(S.run(S.goal(1, null))).toEqual([]);
+                 expect(S.run(S.goal(false, 1))).toEqual([]);
+                 expect(S.run(S.goal(null, 1))).toEqual([]);
+                 expect(S.run(S.goal(2, 1))).toEqual([]);
              });
 
              it("returns a non-empty list if its goal succeeds", function() {
-                var q = lvar("q");
-                var b = run(succeed);
-                expect(b instanceof Array).toBe(true);
+                var q = S.lvar("q");
+                var b = S.run(S.succeed);
+                expect(b instanceof Array).to.equal(true);
                 expect(b[0].binds).toEqual({});
-                b = run(goal(q, true));
-                expect(b instanceof Array).toBe(true);
+                b = S.run(S.goal(q, true));
+                expect(b instanceof Array).to.equal(true);
                 expect(b[0].binds).toEqual({q: true});
             });
         });
